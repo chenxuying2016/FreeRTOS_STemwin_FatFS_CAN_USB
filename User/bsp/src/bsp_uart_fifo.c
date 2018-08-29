@@ -1712,7 +1712,7 @@ static void uart_jiexi(uint8_t *buf,char len)
 {
 	uint8_t i=0,cmd=0,piclen=1;
 	uint16_t sum=0,sumR=0;
-	char FileNamebuf[16]={0},ack[2]={0},canbuf[8]={0};
+	char FileNamebuf[16]={0},ack[2]={0},canbuf[8]={0},picbuf[64]={0};
 
 	for(i=2;i<3+buf[2];i++)
 		sum+=buf[i];

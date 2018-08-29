@@ -42,8 +42,10 @@
 #include "can_network.h"
 #include "demo_fatfs.h"
 
-#define MSG_CreateInfo      (GUI_ID_USER + 0x0E)
-#define MSG_DeleteInfo      (GUI_ID_USER + 0x0F)
+#define MSG_CreateInfo  		(GUI_ID_USER + 0x31)
+#define MSG_DeleteInfo  		(GUI_ID_USER + 0x32)
+#define MSG_Load_CreInfo  	(GUI_ID_USER + 0x33)
+#define MSG_Load_DelInfo		(GUI_ID_USER + 0x34)
 
 /*
 ************************************************************************

@@ -116,6 +116,7 @@ TaskHandle_t xHandleTaskCom = NULL;
 static char project_number;
 //static char picture_num;
 static uint8_t cnt_state = 0;
+static uint8_t load_flag = 0;
 //char flag_bl = 0;
 
 extern CanRxMsg g_tCanRxMsg;	/* 用于接收 */
@@ -229,7 +230,7 @@ static void vTaskTaskUserIF(void *pvParameters)
 			{
 				if((ulValue & BIT_21) != 0)
 					swFlag = 1;
-			}			
+			}
 			switch(cnt_state)
 			{
 				case 1:
@@ -244,7 +245,7 @@ static void vTaskTaskUserIF(void *pvParameters)
 				case 2:
 					cnt_state = 0;
 					GUI_SendKeyMsg(GUI_KEY_DOWN, 1);
-					if(swFlag)
+					if(swFlag && load_flag)
 					{
 						swFlag = 0;
 						picDown(xResult,ulValue);
@@ -267,7 +268,7 @@ static void vTaskTaskUserIF(void *pvParameters)
 				
 				case KEY_3_DOWN:
 					GUI_SendKeyMsg(GUI_KEY_LEFT, 1);
-					if(swFlag)
+					if(swFlag && load_flag)
 					{
 						swFlag = 0;
 						picUp(xResult,ulValue);
@@ -276,7 +277,7 @@ static void vTaskTaskUserIF(void *pvParameters)
 				
 				case KEY_DOWN_K4:		
 					GUI_SendKeyMsg(GUI_KEY_RIGHT, 1);
-					if(swFlag)
+					if(swFlag && load_flag)
 					{
 						swFlag = 0;
 						picDown(xResult,ulValue);
@@ -306,7 +307,7 @@ static void vTaskTaskUserIF(void *pvParameters)
 					break;
 				
 				case KEY_DOWN_K7:
-					if(swFlag)
+					if(swFlag && load_flag)
 					{
 						swFlag = 0;
 						picUp(xResult,ulValue);
@@ -314,7 +315,7 @@ static void vTaskTaskUserIF(void *pvParameters)
 					break;
 				
 				case KEY_DOWN_K8:
-					if(swFlag)
+					if(swFlag && load_flag)
 					{
 						swFlag = 0;
 						picDown(xResult,ulValue);
@@ -383,6 +384,7 @@ static void vTaskMsgPro(void *pvParameters)
 			}
 			if((ulValue & BIT_19) != 0)
 			{
+				load_flag = 0;
 				for(i=0;i<len;i++)
 				{
 					memset(&cfg_para,0,sizeof(cfg_para));
@@ -393,8 +395,10 @@ static void vTaskMsgPro(void *pvParameters)
 //					vTaskDelay(20);
 				}
 //				flag_bl = 1;
-//				GUI_Delay(300);
-//				WM_SendMessageNoPara(hWinMain, MSG_DeleteInfo);
+				vTaskDelay(500);	
+				WM_SendMessageNoPara(WM_GetClientWindow(hWinMain), MSG_Load_DelInfo);
+				vTaskDelay(500);	
+				load_flag = 1;
 			}
 			if((ulValue & BIT_20) != 0)
 			{
@@ -408,7 +412,7 @@ static void vTaskMsgPro(void *pvParameters)
 					memset(&cfg_para,0,sizeof(cfg_para));
 					sprintf(FileNamebuf, "%s%02d",cfgname[project_number], i);
 					ReadFileData(FS_VOLUME_SD,FileNamebuf,&cfg_para,sizeof(cfg_para));
-					len = cfg_para.picMaxN;				
+					len = cfg_para.picMaxN;
 					WriteCfg2U(&cfg_para,i,cfgname[project_number]);
 //					vTaskDelay(20);
 				}
@@ -515,12 +519,14 @@ static void vTaskCom(void *pvParameters)
 */
 static void vTaskUSBPro(void *pvParameters)
 {
+//		usbh_OpenMassStorage();
+	
     while(1)
-    {				
+    {
 			if(HCD_IsDeviceConnected(&USB_OTG_Core))
 			{
 				USBH_Process(&USB_OTG_Core, &USB_Host);
-			}	
+			}
 			
 			vTaskDelay(10);	
     }
@@ -557,26 +563,26 @@ static void AppTaskCreate (void)
 							 3,               		/* 任务优先级*/
 							 &xHandleTaskMsgPro );  /* 任务句柄  */	
 	
-	xTaskCreate( vTaskUSBPro,     		/* 任务函数  */
-							 "vTaskUSBPro",   		/* 任务名    */
-							 256,             		/* 任务栈大小，单位word，也就是4字节 2048*/
-							 NULL,           			/* 任务参数  */
-							 4,               		/* 任务优先级*/
-							 &xHandleTaskUSBPro );  /* 任务句柄  */		
-	
 	xTaskCreate( vTaskStart,     		/* 任务函数  */
 							 "vTaskStart",   		/* 任务名    */
 							 256,            		/* 任务栈大小，单位word，也就是4字节 */
 							 NULL,           		/* 任务参数  */
-							 5,              		/* 任务优先级*/
+							 4,              		/* 任务优先级*/
 							 &xHandleTaskStart );   /* 任务句柄  */	
 	
 	xTaskCreate( vTaskCom,     		/* 任务函数  */
 							 "vTaskCom",   		/* 任务名    */
 							 512,            		/* 任务栈大小，单位word，也就是4字节 */
 							 NULL,           		/* 任务参数  */
-							 6,              		/* 任务优先级*/
+							 5,              		/* 任务优先级*/
 							 &xHandleTaskCom );   /* 任务句柄  */
+	
+	xTaskCreate( vTaskUSBPro,     		/* 任务函数  */
+							 "vTaskUSBPro",   		/* 任务名    */
+							 256,             		/* 任务栈大小，单位word，也就是4字节 2048*/
+							 NULL,           			/* 任务参数  */
+							 6,               		/* 任务优先级*/
+							 &xHandleTaskUSBPro );  /* 任务句柄  */		
 }
 
 static void picUp(BaseType_t res,uint32_t val)
@@ -739,27 +745,3 @@ static void  App_Printf(char *format, ...)
 }
 
 /***************************** 安富莱电子 www.armfly.com (END OF FILE) *********************************/
-void task_create(void)
-{
-		xTaskCreate( vTaskTaskUserIF,   	/* 任务函数  */
-							 "vTaskUserIF",     	/* 任务名    */
-							 512,               	/* 任务栈大小，单位word，也就是4字节 */
-							 NULL,              	/* 任务参数  */
-							 2,                 	/* 任务优先级*/
-							 &xHandleTaskUserIF );  /* 任务句柄  */
-	
-	xTaskCreate( vTaskMsgPro,     		/* 任务函数  */
-							 "vTaskMsgPro",   		/* 任务名    */
-							 512,             		/* 任务栈大小，单位word，也就是4字节 2048*/
-							 NULL,           			/* 任务参数  */
-							 3,               		/* 任务优先级*/
-							 &xHandleTaskMsgPro );  /* 任务句柄  */		
-	
-	xTaskCreate( vTaskStart,     		/* 任务函数  */
-							 "vTaskStart",   		/* 任务名    */
-							 512,            		/* 任务栈大小，单位word，也就是4字节 */
-							 NULL,           		/* 任务参数  */
-							 4,              		/* 任务优先级*/
-							 &xHandleTaskStart );   /* 任务句柄  */
-	
-}

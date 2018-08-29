@@ -39,7 +39,8 @@ char flag_correct = 0;
 char correctbuf[550]={0};
 
 extern FIL MyFiles;
-extern char proname[320][16];
+//extern char proname[320][16];
+extern char currentPro;
 
 /* 仅允许本文件内调用的函数声明 */
 static void MSC_App3(int pronum);
@@ -225,9 +226,9 @@ void MSC_App3(int pronum)
 
 	for(i=0;i<pic_number;i++)
 	{
-		analysisCfgFile();                                     //
-		if(	jiexiwan_flag==1)                           
-		{                                               
+		analysisCfgFile();                             //
+		if(	jiexiwan_flag==1)
+		{      
 			jiexiwan_flag=0;
 			CreateNewFile(pronum,i,0);
 		}
@@ -616,7 +617,8 @@ void CreateNewFile(uint8_t pronum,uint8_t picnum,uint8_t flag)
 	{
 		case 1:
 			result = f_open(&file, "0:/proname.txt", FA_CREATE_ALWAYS | FA_WRITE);
-			result = f_write(&file, &cfgname, sizeof(cfgname), &bw);
+//			result = f_write(&file, &cfgname, sizeof(cfgname), &bw);
+			result = f_write(&file, &currentPro, 1, &bw);
 			break;
 		case 2:
 			flag_correct = 0;
@@ -1473,7 +1475,7 @@ void OP_JiaoZhun(void)
 	correctPara();
 }
 
-void addPro(char len)
+void addPro(char len,char proname[][16])
 {
 	int i,j,k;
 	
@@ -1496,8 +1498,45 @@ void addPro(char len)
 
 void readPro(char maxProNum)
 {
-	ViewRootDir(FS_VOLUME_SD,proname);
-	addPro(maxProNum);
+	char cur_file_name[16] = {0};
+	char (*ptProName)[16];
+	
+	ptProName = (char (*)[16])pvPortMalloc(640*16);//sizeof(char)*640*16
+
+//	ViewRootDir(FS_VOLUME_SD,proname);
+//	addPro(maxProNum,proname);
+	ViewRootDir(FS_VOLUME_SD,ptProName);
+	addPro(maxProNum,ptProName);
+	vPortFree(ptProName);
+	
+	memset(cur_file_name,0,sizeof(cur_file_name));
+	sprintf(cur_file_name, "proname");
+	ReadFileData(FS_VOLUME_SD,cur_file_name,&currentPro,1);
+}
+
+uint8_t File_Init(void)
+{ 
+	usbh_OpenMassStorage();
+
+	result = f_mount(&fs_usb, "2:", 0);
+	if (result != FR_OK)
+	{
+		f_mount(NULL,"2:", 0);
+		return 0;
+	}
+	
+	result = f_opendir(&DirInf_usb, "2:/"); 
+	if (result != FR_OK)
+	{
+//		printf("open USB dir error!\r\n");
+		f_mount(NULL,"2:", 0);
+		return 0;
+	}
+	else
+	{
+		f_mount(NULL,"2:", 0);
+		return 1;
+	}
 }
 /***************************** 安富莱电子 www.armfly.com (END OF FILE) *********************************/
 

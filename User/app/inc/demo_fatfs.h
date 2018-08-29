@@ -130,8 +130,9 @@ void WriteZu(FIL *fileU,CONFIG_PARA *picbuf);
 void Write2U(FIL *fileU,CONFIG_PARA *picbuf);
 void WriteCfg2U(CONFIG_PARA *picbuf,char flag,char *filename);
 void correctPara(void);
-void addPro(char len);
+void addPro(char len,char proname[][16]);
 void readPro(char maxProNum);
+uint8_t File_Init(void);
 #endif
 
 /***************************** 安富莱电子 www.armfly.com (END OF FILE) *********************************/
