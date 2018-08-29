@@ -482,7 +482,7 @@ static void _cbDialog1(WM_MESSAGE * pMsg)
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_10);
 		TEXT_SetFont(hItem, GUI_FONT_24_1);
 		TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
-		TEXT_SetText(hItem, "Shanghai Freesense Image Technology Co,.Ltd.          V0078.01.03");
+		TEXT_SetText(hItem, "Shanghai Freesense Image Technology Co,.Ltd.          V0078.01.04");
 	}	
     //
     // Initialization of 'Button'

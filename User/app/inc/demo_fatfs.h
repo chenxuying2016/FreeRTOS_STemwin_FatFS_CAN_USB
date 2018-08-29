@@ -110,8 +110,11 @@ typedef struct _CONFIG_PIC{
 
 /* 供外部调用的函数声明 */
 char DemoFatFS(void);
+char ComFatFS(char* recvbuf);
 void analysisCfgFile(void);
+void analysisData(char* recv,char* num);
 void strCompare( char *title, char* value,int len);
+void strCompare2( char *title, char* value);
 void zuCompare(char * name,char * num);
 void chCompare(char * name,char * value);
 void chSave(int num);

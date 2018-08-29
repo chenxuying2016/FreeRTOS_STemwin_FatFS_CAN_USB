@@ -1775,9 +1775,24 @@ static void uart_jiexi(uint8_t *buf,char len)
 				sprintf(FileNamebuf, "%s%02d", cfgname[pro_num],buf[4]);
 				ReadFileData(FS_VOLUME_SD,FileNamebuf,&picArray,sizeof(CONFIG_PIC));
 				break;
+			case 7:
+				for(i=0;i<len-8;i++)
+				{
+					picbuf[i] = buf[i+4];
+				}
+				ComFatFS(picbuf);
+				
+				cmd = 0x05;
+				ack[0] = 0x01;
+				comSendMessage(cmd,ack);
+				break;
 			default:
 				break;
 		}
+	}else{				
+//		cmd = 0xXX;
+//		ack[0] = 0x02;
+//		comSendMessage(cmd,ack);
 	}
 }
 
